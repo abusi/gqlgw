@@ -98,4 +98,3 @@ from `examples/` with `--8<-- "path"`, so they are tested by `make test-config`.
 | `bench/` | wrk benchmark |
 | `docker/`, `Dockerfile` | the image |
 | `docs/`, `zensical.toml` | this site |
-| `PLAN.md` | design notes and milestones |
