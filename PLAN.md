@@ -176,7 +176,7 @@ Decided and implemented on 2026-10-11 (M9 to M13, status in section 10).
 
 | # | Decision |
 |---|---|
-| 8 | Distribution = Docker image built on `openresty/openresty:1.31.1.1-resolute` (glibc; no alpine, musl is too slow). The image is only tagged locally: it is not published to a registry. Docker, not podman. |
+| 8 | Distribution = Docker image built on `openresty/openresty:1.31.1.1-resolute` (glibc; no alpine, musl is too slow). Docker, not podman. Since v0.2.0 the image is also published on `ghcr.io/abusi/gqlgw` (amd64, arm64) by the release workflow. |
 | 9 | The SDL is compiled **when the user image is built**. The gateway never starts from an uncompiled `.graphqls`. |
 | 10 | Configuration in `gqlgw.toml` (TOML 1.1, in-house C99 parser), which carries as much of the gateway configuration as possible. The SDL keeps `@fetch(source, path)` on the fields: no "everything in configuration" mode. |
 | 11 | `${VAR}` is accepted in every string value of the TOML. `gqlc` renders at container start; the Lua side reads the rendered configuration, never the environment. |
@@ -340,7 +340,8 @@ its search path. Every name is prefixed `gqlgw_`.
     the entrypoint.
 - Entrypoint: `gqlc render`, then `openresty -t`, then `exec openresty -g 'daemon off;'`. Logs on
   stdout and stderr. Works with `--read-only` and a tmpfs on `/tmp`.
-- `make image` creates the local tags `gqlgw:<version>` and `gqlgw:latest`. Nothing is pushed.
+- `make image` creates the local tags `gqlgw:<version>` and `gqlgw:latest`. Releases are pushed to
+  `ghcr.io/abusi/gqlgw` by `.github/workflows/release.yml` (section 11).
 - `make install PREFIX=/usr/local OPENRESTY_PREFIX=/usr/local/openresty DESTDIR=` installs to the
   same locations, outside Docker.
 - `examples/docker/` contains a user Dockerfile, a `gqlgw.toml` and a `compose.yaml` (gateway,
@@ -422,3 +423,11 @@ its search path. Every name is prefixed `gqlgw_`.
   `build/test_c` did not depend on the generated `src/prelude.inc` (broken on a fresh clone), and
   `t/006-config.t` relied on the system DNS to resolve `localhost` for the nginx resolver. The suite
   now starts its own responder (`scripts/dns.py`, `make dns-start`), like its memcached.
+- **Releases** (`.github/workflows/release.yml`), on a `vX.Y.Z` tag that matches `_VERSION` and has a
+  `CHANGELOG.md` section: `make docker-test`, then the image for linux/amd64 and linux/arm64 on
+  `ghcr.io/abusi/gqlgw` (tags `X.Y.Z`, `X.Y`, `latest`) with a build provenance attestation, then the
+  GitHub release with the changelog section as notes. v0.2.0 is the first one.
+- **Repository hygiene**: CONTRIBUTING (contributions come from forks, squash merges), SECURITY
+  (private vulnerability reporting), issue and pull request templates, Discussions, topics, a social
+  preview image (`.github/social-preview.png`).
+
